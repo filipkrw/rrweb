@@ -106,6 +106,10 @@ export function createPlayerService(
               target: 'playing',
               actions: ['addEvent'],
             },
+            TO_LIVE: {
+              target: 'live',
+              actions: ['startLive'],
+            },
           },
         },
         paused: {
@@ -138,6 +142,14 @@ export function createPlayerService(
               target: 'live',
               actions: ['castEvent'],
             },
+            PLAY: {
+              target: 'playing',
+              actions: ['recordTimeOffset', 'play'],
+            },
+            PAUSE: {
+              target: 'paused',
+              actions: ['pause'],
+            },
           },
         },
       },
@@ -165,6 +177,8 @@ export function createPlayerService(
         }),
         play(ctx) {
           const { timer, events, baselineTime, lastPlayedEvent } = ctx;
+
+          timer.toggleLiveMode(false);
           timer.clear();
 
           for (const event of events) {
@@ -214,6 +228,7 @@ export function createPlayerService(
         },
         pause(ctx) {
           ctx.timer.clear();
+          ctx.timer.toggleLiveMode(false);
         },
         resetLastPlayedEvent: assign((ctx) => {
           return {

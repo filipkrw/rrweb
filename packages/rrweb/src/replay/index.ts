@@ -472,13 +472,10 @@ export class Replayer {
   }
 
   public pause(timeOffset?: number) {
-    if (timeOffset === undefined && this.service.state.matches('playing')) {
-      this.service.send({ type: 'PAUSE' });
-    }
     if (typeof timeOffset === 'number') {
       this.play(timeOffset);
-      this.service.send({ type: 'PAUSE' });
     }
+    this.service.send({ type: 'PAUSE' });
     this.iframe.contentDocument
       ?.getElementsByTagName('html')[0]
       ?.classList.add('rrweb-paused');

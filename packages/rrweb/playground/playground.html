@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+  <title>Playground</title>
+  <link rel="stylesheet" href="../dist/rrweb.css" />
+  <style>
+    #replayer {
+      transform: scale(0.5);
+      transform-origin: top left;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="timer"></div>
+  <div id="replayer"></div>
+
+  <script src="../dist/rrweb.js"></script>
+  <script src="./events.js"></script>
+  <script>
+    const replayer = new rrweb.Replayer([], {
+      root: document.getElementById('replayer'),
+      liveMode: true
+    });
+    const timer = createTimer();
+
+    replayer.startLive(Date.now());
+    timer.setTimerToLive();
+
+    console.time('start')
+
+    window.r = replayer;
+    window.$ = {
+      play: (timeOffset = 0) => {
+        timer.startTimer(timeOffset);
+        replayer.play(timeOffset)
+      },
+      pause: () => {
+        timer.pauseTimer();
+        replayer.pause()
+      },
+      resumeLive: () => {
+        timer.setTimerToLive()
+        const firstEventTimestamp = replayer.service.state.context.events.at(0).timestamp;
+        const lastEventTimestamp = replayer.service.state.context.events.at(-1).timestamp;
+        replayer.play(lastEventTimestamp);
+        replayer.startLive(Date.now())
+      },
+    }
+
+    // replayer.on('state-change', (s) => console.log(replayer.getMetaData().totalTime))
+
+    for (const [index, event] of events.entries()) {
+      setTimeout(() => {
+        replayer.addEvent({
+          ...event,
+          timestamp: Date.now()
+        });
+      }, index * 100);
+    }
+
+    function createTimer() {
+      let currentTime = 0;
+      let timer;
+
+      function startTimer(timeOffset) {
+        currentTime = timeOffset;
+        pauseTimer();
+        document.getElementById('timer').innerHTML = Math.floor(currentTime / 1000);
+        timer = setInterval(() => {
+          currentTime += 1000;
+          document.getElementById('timer').innerHTML = Math.floor(currentTime / 1000);
+        }, 1000);
+      }
+
+      function pauseTimer() {
+        if (timer) {
+          clearInterval(timer);
+        }
+      }
+
+      function setTimerToLive() {
+        pauseTimer();
+        currentTime = document.getElementById('timer').innerHTML = 'Live';
+      }
+
+      return {
+        currentTime,
+        startTimer,
+        pauseTimer,
+        setTimerToLive
+      }
+    }
+  </script>
+</body>
+
+</html>
